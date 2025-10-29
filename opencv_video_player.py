@@ -135,8 +135,7 @@ class OpenCVVideoPlayer(QWidget):
         self.video_label.setStyleSheet("""
             QLabel {
                 background-color: black;
-                border: 1px solid #3498db;
-                border-radius: 3px;
+                border: none;
             }
         """)
         self.video_label.setText("准备播放视频...")
@@ -309,8 +308,7 @@ class OpenCVVideoPlayer(QWidget):
             self.video_label.setStyleSheet("""
                 QLabel {
                     background-color: black;
-                    border: 1px solid #3498db;
-                    border-radius: 3px;
+                    border: none;
                 }
             """)
         

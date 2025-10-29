@@ -12,7 +12,7 @@
 ### 📺 丰富的内容类型
 - **📝 文本显示**: 支持富文本和自定义样式
 - **🖼️ 图片展示**: 支持多种图片格式，自动缩放适配
-- **🎬 视频播放**: 内置OpenCV视频播放器，支持主流视频格式
+- **🎬 视频播放**: 内置OpenCV高性能视频播放器，支持主流视频格式，无边框纯净播放
 - **🌐 网页内容**: 集成WebEngine，支持实时网页显示
 
 ### 🎯 视图配置系统
@@ -28,30 +28,30 @@
 
 ## 🚀 快速开始
 
-### 环境要求
-- Python 3.7+
+### 方式一：直接运行可执行文件（推荐）
+1. 下载最新的 `多屏幕内容管理器_简化版.exe`
+2. 双击运行即可，无需安装Python环境
+
+### 方式二：源码运行
+#### 环境要求
+- Python 3.8+
 - Windows 10/11 (主要支持平台)
 - 支持多显示器的显卡
 
-### 安装依赖
+#### 安装依赖
 ```bash
 pip install -r requirements.txt
 ```
 
-### 运行程序
+#### 运行程序
 ```bash
-python main.py
-```
-
-或者使用批处理文件：
-```bash
-run.bat
+python simple_launcher.py
 ```
 
 ## 📖 使用指南
 
 ### 1. 基本操作
-1. **启动程序**: 运行`main.py`或`run.bat`
+1. **启动程序**: 运行`多屏幕内容管理器_简化版.exe`或`python simple_launcher.py`
 2. **屏幕检测**: 程序会自动检测所有连接的显示器
 3. **内容配置**: 在左侧面板为每个屏幕选择内容类型和内容
 4. **应用内容**: 点击"应用到屏幕"按钮显示内容
@@ -76,18 +76,23 @@ run.bat
 
 ```
 多屏幕内容管理器/
-├── main.py                     # 主程序入口
-├── content_window.py            # 内容窗口组件
+├── simple_launcher.py           # 主程序入口（带启动画面）
+├── main.py                     # 主程序核心
+├── splash_screen.py            # 启动画面组件
+├── threaded_content_window.py   # 线程化内容窗口组件
 ├── screen_manager.py            # 屏幕管理器
 ├── view_config_manager.py       # 视图配置管理器
+├── settings_dialog.py          # 设置对话框
 ├── opencv_video_player.py       # OpenCV视频播放器
 ├── embedded_video_player.py     # 嵌入式视频播放器
 ├── video_player_alternatives.py # 备用视频播放器
-├── ui_styles.py                # UI样式定义
+├── ui_styles_complete.py       # 完整UI样式定义
 ├── requirements.txt            # 依赖包列表
-├── run.bat                     # Windows启动脚本
+├── build_simple.spec           # PyInstaller构建配置
 ├── view_configs/               # 配置文件存储目录
 ├── assets/                     # 资源文件目录
+├── dist/                       # 可执行文件目录
+│   └── 多屏幕内容管理器_简化版.exe  # 主程序可执行文件
 └── README.md                   # 项目说明文档
 ```
 
@@ -132,7 +137,15 @@ run.bat
 ### 开发环境搭建
 1. 克隆仓库
 2. 安装依赖: `pip install -r requirements.txt`
-3. 运行程序: `python main.py`
+3. 运行程序: `python simple_launcher.py`
+
+### 构建可执行文件
+```bash
+# 使用PyInstaller构建
+pyinstaller build_simple.spec --clean
+```
+
+构建完成后，可执行文件位于 `dist/` 目录中。
 
 ### 提交规范
 - 使用清晰的提交信息
@@ -141,7 +154,15 @@ run.bat
 
 ## 📄 更新日志
 
-### v2.0.0 (当前版本)
+### v2.1.0 (当前版本)
+- 🚀 **性能优化**: 启动速度提升，添加启动画面
+- 🎬 **视频播放器优化**: 移除边框，纯净播放体验
+- 📦 **打包优化**: 简化版EXE，减小文件体积，提高稳定性
+- 🧵 **多线程架构**: 线程化内容窗口，避免界面阻塞
+- 🔧 **代码清理**: 移除冗余文件，优化项目结构
+- ⚡ **OpenCV集成**: 高性能视频播放支持
+
+### v2.0.0
 - ✨ 全新的视图配置系统
 - 🎯 三部分布局优化 (屏幕预览/配置详情/配置中心)
 - 🖥️ 完全无边框全屏显示

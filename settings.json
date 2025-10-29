@@ -1,0 +1,19 @@
+{
+  "global_font_size": 12,
+  "title_font_size": 20,
+  "button_font_size": 12,
+  "ui_scale": 92,
+  "auto_startup": false,
+  "start_minimized": false,
+  "auto_load_config": true,
+  "hardware_acceleration": true,
+  "memory_optimization": true,
+  "max_configs": 50,
+  "auto_backup": true,
+  "theme": "深色主题",
+  "opacity": 100,
+  "enable_animations": true,
+  "animation_speed": "正常",
+  "remember_position": true,
+  "always_on_top": false
+}

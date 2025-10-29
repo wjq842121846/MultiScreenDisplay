@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QGroupBox, QTextEdit, QSplitter, QTableWidget, QTableWidgetItem)
 from PyQt5.QtCore import Qt, QRect, QTimer, pyqtSignal, QPoint
 from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont, QPixmap, QCursor
-from ui_styles import PREVIEW_GROUP_STYLE, PREVIEW_WIDGET_STYLE
+from ui_styles_complete import PREVIEW_GROUP_STYLE, PREVIEW_WIDGET_STYLE
 
 class ScreenViewWidget(QWidget):
     """单个屏幕的视图组件，模拟真实屏幕"""
@@ -331,19 +331,39 @@ class ViewConfigManager(QWidget):
             os.makedirs(self.config_dir)
         
     def init_ui(self):
-        """初始化界面 - 重新设计为上中下三部分"""
+        """初始化界面 - 修改为上下两部分：上部为水平布局（屏幕预览+控制配置），下部为配置中心"""
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(15)
+        layout.setContentsMargins(1, 1, 1, 1)  # 减小外边距
+        layout.setSpacing(1)  # 减小间距
         
-        # 上部分：屏幕位置显示区域
-        self.create_screen_display_section(layout)
+        # 上部分：屏幕布局预览和屏幕控制配置 - 水平布局
+        top_widget = QWidget()
+        top_layout = QHBoxLayout(top_widget)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.setSpacing(1)  # 减小间距
         
-        # 中部分：配置详情编辑区域
-        self.create_config_details_section(layout)
+        # 左侧：屏幕布局预览
+        display_widget = QWidget()
+        display_layout = QVBoxLayout(display_widget)
+        display_layout.setContentsMargins(0, 0, 0, 0)
+        self.create_screen_display_section(display_layout)
+        top_layout.addWidget(display_widget, 1)  # stretch=1
+        
+        # 右侧：屏幕控制与配置
+        details_widget = QWidget()
+        details_layout = QVBoxLayout(details_widget)
+        details_layout.setContentsMargins(0, 0, 0, 0)
+        self.create_config_details_section(details_layout)
+        top_layout.addWidget(details_widget, 2)  # stretch=2，占更大空间
+        
+        layout.addWidget(top_widget, 2)  # stretch=2，上部分占主要空间
         
         # 下部分：配置中心列表
-        self.create_config_center_section(layout)
+        center_widget = QWidget()
+        center_layout = QVBoxLayout(center_widget)
+        center_layout.setContentsMargins(0, 0, 0, 0)
+        self.create_config_center_section(center_layout)
+        layout.addWidget(center_widget, 1)  # stretch=1，下部分占较小空间
         
         # 连接信号
         self.screen_layout_view.screen_selected.connect(self.on_screen_selected)
@@ -363,8 +383,7 @@ class ViewConfigManager(QWidget):
                                           stop:0 rgba(52, 152, 219, 0.15),
                                           stop:1 rgba(52, 152, 219, 0.05));
                 color: #ecf0f1;
-                min-height: 280px;
-                max-height: 300px;
+                /* 移除固定高度，使用弹性布局 */
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
@@ -378,7 +397,7 @@ class ViewConfigManager(QWidget):
         """)
         
         display_layout = QVBoxLayout(display_group)
-        display_layout.setContentsMargins(10, 20, 10, 10)
+        display_layout.setContentsMargins(1, 1, 1, 1)  # 减小外边距为1px
         
         # 操作提示
         tip_label = QLabel("💡 点击屏幕可选择要编辑的显示器，预览模式下可查看配置效果")
@@ -401,65 +420,53 @@ class ViewConfigManager(QWidget):
         parent_layout.addWidget(display_group)
         
     def create_config_details_section(self, parent_layout):
-        """创建配置详情编辑区域（中部分）"""
-        details_group = QGroupBox("⚙️ 屏幕配置详情")
+        """创建屏幕控制和配置详情区域（集成屏幕控制功能）"""
+        details_group = QGroupBox("🖥️ 屏幕控制与配置")
         details_group.setStyleSheet("""
             QGroupBox {
                 font-size: 16px;
                 font-weight: bold;
-                border: 2px solid #27ae60;
-                border-radius: 12px;
+                color: #000000;
+                background: #ffffff;
+                border: 1px solid #87ceeb;
+                border-radius: 8px;
                 margin-top: 15px;
                 padding-top: 15px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                          stop:0 rgba(39, 174, 96, 0.15),
-                                          stop:1 rgba(39, 174, 96, 0.05));
-                color: #ecf0f1;
-                min-height: 200px;
-                max-height: 250px;
+                /* 移除固定高度，自适应内容 */
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
                 left: 20px;
                 padding: 5px 12px 5px 12px;
-                background: #27ae60;
-                border-radius: 8px;
-                color: white;
+                background: #87ceeb;
+                border-radius: 6px;
+                color: #000000;
                 font-size: 14px;
             }
         """)
         
         details_layout = QVBoxLayout(details_group)
-        details_layout.setContentsMargins(10, 20, 10, 10)
+        details_layout.setContentsMargins(1, 1, 1, 1)  # 减小外边距为1px
         
         # 创建滚动区域来容纳多个屏幕配置
         scroll_area = QScrollArea()
         scroll_area.setStyleSheet("""
             QScrollArea {
-                border: none;
-                background: transparent;
-            }
-            QScrollBar:horizontal {
-                background: rgba(52, 73, 94, 0.3);
-                height: 8px;
-                border-radius: 4px;
-            }
-            QScrollBar::handle:horizontal {
-                background: #27ae60;
-                border-radius: 4px;
-                min-width: 20px;
+                border: 1px solid #87ceeb;
+                border-radius: 6px;
+                background: #ffffff;
             }
         """)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         scroll_area.setWidgetResizable(True)
         
-        # 屏幕配置容器
+        # 屏幕配置容器 - 改为水平布局以支持4个屏幕横向排列
         self.config_container = QWidget()
         self.config_container.setStyleSheet("background: transparent;")
         self.config_layout = QHBoxLayout(self.config_container)
-        self.config_layout.setSpacing(15)
-        self.config_layout.setContentsMargins(10, 5, 10, 5)
+        self.config_layout.setSpacing(1)  # 减小间距为1px
+        self.config_layout.setContentsMargins(1, 1, 1, 1)  # 减小外边距为1px
         
         scroll_area.setWidget(self.config_container)
         details_layout.addWidget(scroll_area)
@@ -481,7 +488,7 @@ class ViewConfigManager(QWidget):
                                           stop:0 rgba(230, 126, 34, 0.15),
                                           stop:1 rgba(230, 126, 34, 0.05));
                 color: #ecf0f1;
-                min-height: 300px;
+                /* 移除固定高度，自适应内容 */
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
@@ -495,8 +502,8 @@ class ViewConfigManager(QWidget):
         """)
         
         center_layout = QVBoxLayout(center_group)
-        center_layout.setContentsMargins(10, 20, 10, 10)
-        center_layout.setSpacing(12)
+        center_layout.setContentsMargins(1, 1, 1, 1)  # 减小外边距为1px
+        center_layout.setSpacing(1)  # 减小间距为1px
         
         # 配置操作区域
         self.create_config_operations(center_layout)
@@ -509,7 +516,7 @@ class ViewConfigManager(QWidget):
     def create_config_operations(self, parent_layout):
         """创建配置操作区域"""
         operations_layout = QHBoxLayout()
-        operations_layout.setSpacing(10)
+        operations_layout.setSpacing(1)  # 减小间距为1px
         
         # 保存配置按钮
         save_config_btn = QPushButton("💾 保存配置")
@@ -697,7 +704,7 @@ class ViewConfigManager(QWidget):
             QScrollBar::handle:vertical {
                 background: #e67e22;
                 border-radius: 4px;
-                min-height: 20px;
+                /* 移除固定高度，自适应内容 */
             }
         """)
         
@@ -725,133 +732,214 @@ class ViewConfigManager(QWidget):
         self.refresh_config_table()
         
     def create_screen_config_widget(self, screen_index, screen_info):
-        """为每个屏幕创建配置小部件"""
+        """为每个屏幕创建完整的控制配置小部件"""
         screen_widget = QWidget()
-        screen_widget.setFixedWidth(180)
         screen_widget.setStyleSheet("""
             QWidget {
-                background: rgba(52, 152, 219, 0.1);
-                border: 2px solid #3498db;
+                background: #ffffff;
+                border: 1px solid #87ceeb;
                 border-radius: 8px;
                 padding: 8px;
+                margin: 3px;
+                /* 移除固定尺寸，使用弹性布局自适应 */
+                flex: 1;
             }
         """)
         
         layout = QVBoxLayout(screen_widget)
-        layout.setSpacing(8)
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(1)  # 减小间距为1px
+        layout.setContentsMargins(1, 1, 1, 1)  # 减小外边距为1px
+        
+        # 屏幕标题和信息
+        header_layout = QHBoxLayout()
         
         # 屏幕标题
-        title_label = QLabel(f"🖥️ 屏幕 {screen_index + 1}")
-        if screen_info.get('is_primary', False):
-            title_label.setText(f"🖥️ 屏幕 {screen_index + 1} (主)")
+        primary_text = " (主屏幕)" if screen_info.get('is_primary', False) else ""
+        title_label = QLabel(f"🖥️ 屏幕 {screen_index + 1}{primary_text}")
         title_label.setStyleSheet("""
             QLabel {
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
-                color: #3498db;
+                color: #000000;
                 background: transparent;
-                padding: 5px;
+                padding: 2px;
             }
         """)
-        title_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title_label)
         
-        # 分辨率信息
-        resolution_label = QLabel(f"{screen_info['width']}×{screen_info['height']}")
-        resolution_label.setStyleSheet("""
+        # 分辨率和位置信息
+        info_label = QLabel(f"{screen_info['width']}×{screen_info['height']} 位置({screen_info['x']},{screen_info['y']})")
+        info_label.setStyleSheet("""
             QLabel {
-                font-size: 10px;
-                color: #7fb3d3;
+                font-size: 9px;
+                color: #4169e1;
                 background: transparent;
+                padding: 0px;
             }
         """)
-        resolution_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(resolution_label)
+        
+        header_layout.addWidget(title_label)
+        header_layout.addStretch()
+        header_layout.addWidget(info_label)
+        layout.addLayout(header_layout)
         
         # 内容类型选择
-        content_type_label = QLabel("内容类型:")
+        type_layout = QHBoxLayout()
+        content_type_label = QLabel("类型:")
         content_type_label.setStyleSheet("""
             QLabel {
-                font-size: 11px;
-                color: #ecf0f1;
+                font-size: 10px;
+                color: #000000;
                 background: transparent;
-                margin-top: 5px;
+                font-weight: 500;
+                /* 移除固定宽度，自适应内容 */
             }
         """)
-        layout.addWidget(content_type_label)
         
         content_type_combo = QComboBox()
         content_type_combo.setStyleSheet("""
             QComboBox {
-                background: #2c3e50;
-                border: 1px solid #3498db;
-                border-radius: 4px;
-                padding: 4px 8px;
-                color: #ecf0f1;
+                background: #ffffff;
+                color: #000000;
+                border: 1px solid #87ceeb;
+                border-radius: 3px;
+                padding: 2px 6px;
                 font-size: 10px;
-                min-height: 22px;
+                font-weight: 400;
+                /* 移除固定高度，自适应内容 */
             }
             QComboBox:hover {
-                border-color: #2980b9;
+                border-color: #4169e1;
+                background: #f0f8ff;
+            }
+            QComboBox:focus {
+                border-color: #4169e1;
+                outline: none;
             }
         """)
         content_type_combo.addItems(["无内容", "文本", "图片", "视频", "网页"])
-        layout.addWidget(content_type_combo)
         
-        # 内容输入和文件选择区域
+        type_layout.addWidget(content_type_label)
+        type_layout.addWidget(content_type_combo, 1)
+        layout.addLayout(type_layout)
+        
+        # 内容输入区域
+        content_label = QLabel("内容:")
+        content_label.setStyleSheet("""
+            QLabel {
+                font-size: 10px;
+                color: #000000;
+                background: transparent;
+                font-weight: 500;
+            }
+        """)
+        layout.addWidget(content_label)
+        
+        # 内容输入和文件选择
         input_layout = QHBoxLayout()
         
         content_input = QLineEdit()
-        content_input.setPlaceholderText("内容或路径...")
+        content_input.setPlaceholderText("请输入内容或选择文件...")
         content_input.setStyleSheet("""
             QLineEdit {
-                background: #2c3e50;
-                border: 1px solid #16a085;
-                border-radius: 4px;
-                padding: 4px 8px;
-                color: #ecf0f1;
+                background: #ffffff;
+                color: #000000;
+                border: 1px solid #87ceeb;
+                border-radius: 3px;
+                padding: 2px 6px;
                 font-size: 10px;
-                min-height: 22px;
+                font-weight: 400;
+                /* 移除固定高度，自适应内容 */
             }
             QLineEdit:focus {
-                border-color: #1abc9c;
+                border-color: #4169e1;
+                outline: none;
+            }
+            QLineEdit:hover {
+                border-color: #4169e1;
             }
         """)
         
         # 文件选择按钮
         file_select_btn = QPushButton("📁")
+        file_select_btn.setToolTip("选择文件")
         file_select_btn.setStyleSheet("""
             QPushButton {
-                background: #3498db;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                font-size: 12px;
-                min-width: 25px;
-                max-width: 25px;
-                min-height: 25px;
-                max-height: 25px;
+                background: #ffffff;
+                color: #000000;
+                border: 1px solid #87ceeb;
+                border-radius: 3px;
+                padding: 2px 4px;
+                font-size: 10px;
+                font-weight: 500;
+                /* 移除固定宽度，但保持紧凑样式 */
+                width: 1.5em;
+                /* 移除固定高度，自适应内容 */
             }
             QPushButton:hover {
-                background: #2980b9;
+                background: #f0f8ff;
+                border-color: #4169e1;
             }
             QPushButton:pressed {
-                background: #21618c;
+                background: #e6f3ff;
             }
         """)
-        file_select_btn.setToolTip("选择文件")
         file_select_btn.clicked.connect(lambda: self.select_file_for_screen(content_input))
         
-        input_layout.addWidget(content_input)
+        input_layout.addWidget(content_input, 2)
         input_layout.addWidget(file_select_btn)
         layout.addLayout(input_layout)
+        
+        # 操作按钮区域
+        button_layout = QHBoxLayout()
+        
+        # 应用到屏幕按钮
+        apply_btn = QPushButton("✅ 应用")
+        apply_btn.setStyleSheet("""
+            QPushButton {
+                background: #f0f8ff;
+                color: #000000;
+                border: 1px solid #4169e1;
+                border-radius: 3px;
+                padding: 3px 8px;
+                font-size: 10px;
+                font-weight: 600;
+                /* 移除固定宽度，自适应内容 */
+                /* 移除固定高度，自适应内容 */
+            }
+            QPushButton:hover {
+                background: #e6f3ff;
+                border-color: #4169e1;
+            }
+            QPushButton:pressed {
+                background: #ddeeff;
+            }
+        """)
+        apply_btn.clicked.connect(lambda: self.apply_screen_content(screen_index, content_type_combo.currentText(), content_input.text()))
+        
+        button_layout.addWidget(apply_btn)
+        layout.addLayout(button_layout)
         
         # 保存组件引用
         screen_widget.content_type_combo = content_type_combo
         screen_widget.content_input = content_input
+        screen_widget.screen_index = screen_index
+        screen_widget.screen_info = screen_info
         
         return screen_widget
+        
+    def apply_screen_content(self, screen_index, content_type, content):
+        """应用内容到指定屏幕"""
+        # 使用主控制器来应用内容
+        if hasattr(self, 'main_controller') and self.main_controller:
+            self.main_controller.apply_content(screen_index, content_type, content)
+            from PyQt5.QtWidgets import QMessageBox
+            QMessageBox.information(self, "成功", f"✅ 屏幕 {screen_index + 1} 内容已应用：{content_type}")
+        else:
+            from PyQt5.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "错误", "无法连接到主控制器")
+        
+        # 更新屏幕布局视图
+        self.screen_layout_view.update_screen_content(screen_index, content_type, content)
         
     def select_file_for_screen(self, line_edit):
         """为屏幕配置选择文件"""
@@ -1333,7 +1421,7 @@ class ViewConfigManager(QWidget):
         layout.addWidget(self.config_list)
         
         # 刷新配置列表
-        self.refresh_config_list()
+        self.refresh_config_table()
         
         parent_layout.addWidget(group)
         
@@ -1417,7 +1505,7 @@ class ViewConfigManager(QWidget):
                 background: #7f8c8d;
             }
         """)
-        refresh_btn.clicked.connect(self.refresh_config_list)
+        refresh_btn.clicked.connect(self.refresh_config_table)
         
         export_btn = QPushButton("📤 导出配置")
         export_btn.setStyleSheet("""
@@ -1503,7 +1591,8 @@ class ViewConfigManager(QWidget):
     
     def refresh_config_list(self):
         """刷新配置列表"""
-        self.config_list.clear()
+        if hasattr(self, 'config_list'):
+            self.config_list.clear()
         
         if not os.path.exists(self.config_dir):
             return
@@ -1539,9 +1628,10 @@ class ViewConfigManager(QWidget):
                 if description:
                     display_text += f"\n💭 {description[:50]}{'...' if len(description) > 50 else ''}"
                 
-                item = QListWidgetItem(display_text)
-                item.setData(Qt.UserRole, config_path)  # 存储文件路径
-                self.config_list.addItem(item)
+                if hasattr(self, 'config_list'):
+                    item = QListWidgetItem(display_text)
+                    item.setData(Qt.UserRole, config_path)  # 存储文件路径
+                    self.config_list.addItem(item)
                 
             except Exception as e:
                 print(f"加载配置文件 {config_file} 失败: {e}")
@@ -1594,8 +1684,21 @@ class ViewConfigManager(QWidget):
             
         # 获取配置路径和名称
         name_item = self.config_table.item(current_row, 0)
+        if not name_item:
+            QMessageBox.warning(self, "警告", "无法获取配置信息！")
+            return
+            
         config_path = name_item.data(Qt.UserRole)
         config_name = name_item.text()
+        
+        if not config_path:
+            QMessageBox.warning(self, "警告", "无法获取配置文件路径！")
+            return
+            
+        if not os.path.exists(config_path):
+            QMessageBox.warning(self, "警告", f"配置文件不存在：{config_path}")
+            self.refresh_config_table()  # 刷新列表移除无效项
+            return
         
         reply = QMessageBox.question(
             self, "确认删除", 
@@ -1608,17 +1711,24 @@ class ViewConfigManager(QWidget):
                 os.remove(config_path)
                 QMessageBox.information(self, "成功", f"配置 '{config_name}' 已删除！")
                 self.refresh_config_table()
+            except FileNotFoundError:
+                QMessageBox.warning(self, "警告", f"文件不存在：{config_path}")
+                self.refresh_config_table()
+            except PermissionError:
+                QMessageBox.critical(self, "错误", f"权限不足，无法删除文件：{config_path}")
             except Exception as e:
-                QMessageBox.critical(self, "错误", f"删除配置失败：{str(e)}")
+                QMessageBox.critical(self, "错误", f"删除配置失败：{str(e)}\n路径：{config_path}")
     
     def export_config(self):
         """导出配置（复制到剪贴板）"""
-        current_item = self.config_list.currentItem()
-        if not current_item:
+        current_row = self.config_table.currentRow()
+        if current_row < 0:
             QMessageBox.warning(self, "警告", "请先选择一个配置！")
             return
             
-        config_path = current_item.data(Qt.UserRole)
+        # 获取配置路径
+        name_item = self.config_table.item(current_row, 0)
+        config_path = name_item.data(Qt.UserRole)
         
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
